@@ -3,25 +3,19 @@
     <CommonHeader title="MSG Board" />
 
     <!-- 创建留言按钮 -->
-    <transition name="fade-up" appear>
-      <div class="action-wrapper">
-        <el-button class="create-button" @click="openCreateDialog">
-          <el-icon class="icon">
-            <Edit />
-          </el-icon>
-          写留言
-        </el-button>
-      </div>
-    </transition>
+    <div class="action-wrapper">
+      <el-button class="create-button" @click="openCreateDialog">
+        <el-icon class="icon">
+          <Edit />
+        </el-icon>
+        写留言
+      </el-button>
+    </div>
 
     <!-- 留言列表区域 -->
-    <transition name="fade-up" appear>
-      <div class="content-wrapper">
-        <transition name="fade-up" appear>
-          <BoardList @reply="handleReply" class="board-list" />
-        </transition>
-      </div>
-    </transition>
+    <div class="board-content">
+      <BoardList @reply="handleReply" />
+    </div>
 
     <!-- 创建留言对话框 -->
     <CreateBoard v-model="showCreateDialog" @submit="handleCreateMessage" />
@@ -59,34 +53,33 @@ const handleReply = (message: Message) => {
 
 <style scoped>
 .board-container {
+  min-height: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  overflow-y: auto;
+  /* 主容器负责滚动 */
+  overflow-x: hidden;
 }
 
 .action-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
+  flex-shrink: 0;
+  /* 防止压缩 */
 }
 
-.content-wrapper {
+.board-content {
   flex: 1;
-  min-height: 0;
-  margin-bottom: 2rem;
-  overflow-y: auto;
-  position: relative;
-}
-
-.board-list {
-  height: 100%;
-  padding: 0 20px;
-}
-
-.pagination-wrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
+  width: 100%;
+  position: relative;
+  padding-bottom: 1rem;
+  box-sizing: border-box;
 }
 
 .create-button {
@@ -111,22 +104,6 @@ const handleReply = (message: Message) => {
 
 .icon {
   font-size: 1.2rem;
-}
-
-/* 动画效果 */
-.fade-up-enter-active {
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: calc(var(--el-transition-duration) * 0.2);
-}
-
-.fade-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.fade-up-enter-to {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* 对话框样式 */
@@ -179,21 +156,21 @@ const handleReply = (message: Message) => {
 }
 
 /* 滚动条样式 */
-.content-wrapper::-webkit-scrollbar {
+.board-container::-webkit-scrollbar {
   width: 6px;
 }
 
-.content-wrapper::-webkit-scrollbar-track {
+.board-container::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 
-.content-wrapper::-webkit-scrollbar-thumb {
+.board-container::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
 
-.content-wrapper::-webkit-scrollbar-thumb:hover {
+.board-container::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
 </style>

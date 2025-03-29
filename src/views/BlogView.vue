@@ -1,41 +1,32 @@
 <template>
-  <div class="blog-container">
+  <div class="blog-view-container">
     <CommonHeader title="Newest Blogs" />
 
-    <transition name="fade-up" appear>
-      <p class="subtitle">分享技术与生活</p>
-    </transition>
+    <div class="subtitle">分享技术与生活</div>
 
-    <transition name="fade-up" appear>
-      <div class="blog-list">
-        <Bloglist />
-      </div>
-    </transition>
-
-    <transition name="fade-up" appear>
-      <div class="pagination-wrapper">
-        <PaginationView :total="100" @update:page="handlePageChange" />
-      </div>
-    </transition>
+    <div class="blog-content">
+      <Bloglist />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import Bloglist from '@/components/blog/BlogList.vue'
-import PaginationView from '@/components/PaginationView.vue'
 import CommonHeader from '@/components/CommonHeader.vue'
-
-const handlePageChange = (page: number) => {
-  console.log('页码改变:', page)
-  // TODO: 在这里处理页码改变的逻辑
-}
 </script>
 
 <style scoped>
-.blog-container {
+.blog-view-container {
+  min-height: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
+  overflow-y: auto;
+  /* 主容器负责滚动 */
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .subtitle {
@@ -43,39 +34,36 @@ const handlePageChange = (page: number) => {
   color: #e0e0e0;
   opacity: 0.9;
   text-align: center;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
+  flex-shrink: 0;
 }
 
-.blog-list {
+.blog-content {
   flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto 2rem;
   width: 100%;
   position: relative;
-}
-
-.pagination-wrapper {
+  padding-bottom: 50px;
+  box-sizing: border-box;
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
 }
 
-/* 动画效果 */
-.fade-up-enter-active {
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: calc(var(--el-transition-duration) * 0.2);
+/* 滚动条样式 */
+.blog-view-container::-webkit-scrollbar {
+  width: 6px;
 }
 
-.fade-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
+.blog-view-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
 }
 
-.fade-up-enter-to {
-  opacity: 1;
-  transform: translateY(0);
+.blog-view-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.blog-view-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 </style>

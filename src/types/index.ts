@@ -234,3 +234,50 @@ export interface UserForm {
   name: string
   avatar: string
 }
+
+/**
+ * 博客相关类型定义
+ */
+// 博客分类接口
+export interface BlogCategory {
+  id: number
+  name: string
+  description: string
+  slug: string
+  parent: number | null
+  order: number
+  created_at: string
+  updated_at: string
+}
+
+// 博客标签接口
+export interface BlogTag {
+  id: number
+  name: string
+  slug: string
+  description: string
+  created_at: string
+  updated_at: string
+}
+
+// 单条博客接口
+export interface Blog {
+  id: number
+  title: string
+  content: string
+  summary: string
+  category: BlogCategory
+  tags: BlogTag[]
+  status: string
+  is_top: boolean
+  view_count: number
+  like_count: number
+  comment_count: number
+  created_at: string
+  updated_at: string
+  published_at: string
+  slug: string
+  cover_image: string | null
+  is_original: boolean
+  original_url: string
+}

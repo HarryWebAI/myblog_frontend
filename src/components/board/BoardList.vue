@@ -1,9 +1,19 @@
 <template>
   <div class="board-container">
-    <div class="message-list">
-      <transition name="fade-up" appear>
-        <div v-if="loading" class="loading-container">
-          <el-skeleton :rows="3" animated />
+    <!-- 加载遮罩层 -->
+    <div v-if="loading" class="loading-overlay">
+      <div class="loading-content">
+        <el-icon class="loading-icon">
+          <Loading />
+        </el-icon>
+        <p class="loading-text">加载留言中...</p>
+      </div>
+    </div>
+
+    <transition name="fade-up" appear>
+      <div v-if="!loading" class="message-list">
+        <div v-if="messages.length === 0" class="empty-state">
+          <el-empty description="暂无留言" />
         </div>
         <div v-else>
           <div v-for="message in messages" :key="message.id" class="message-card">
@@ -75,15 +85,15 @@
             </div>
           </div>
         </div>
-      </transition>
-    </div>
+      </div>
+    </transition>
 
     <transition name="fade-up" appear>
-      <div class="pagination-wrapper">
-        <transition-group name="page-fade" tag="div" class="pagination-container">
+      <div v-if="!loading && total > 0" class="pagination-wrapper">
+        <div class="pagination-container">
           <el-pagination key="pagination" v-model:current-page="currentPage" :total="total" :page-size="3"
             layout="prev, pager, next" @current-change="handleCurrentChange" />
-        </transition-group>
+        </div>
       </div>
     </transition>
 
@@ -94,7 +104,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ChatDotRound, Delete } from '@element-plus/icons-vue'
+import { ChatDotRound, Delete, Loading } from '@element-plus/icons-vue'
 import type { Message, Reply } from '@/types'
 import CreateReply from './CreateReply.vue'
 import useMsgBoard from '@/hooks/useMsgBoard'
@@ -218,21 +228,73 @@ onMounted(() => {
 
 <style scoped>
 .board-container {
-  height: 100%;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-  padding: 0 40px;
+  box-sizing: border-box;
+  padding: 0 20px;
+  position: relative;
+}
+
+/* 加载遮罩层样式 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(26, 26, 26, 0.7);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.loading-content {
+  text-align: center;
+  color: #fff;
+}
+
+.loading-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: rotate 2s linear infinite;
+}
+
+.loading-text {
+  font-size: 18px;
+  margin: 0;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem 0;
 }
 
 .message-list {
-  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  margin-bottom: 2rem;
-  overflow-y: auto;
 }
 
 /* 留言卡片 */
@@ -326,45 +388,6 @@ onMounted(() => {
   color: #d0d0d0;
 }
 
-/* 留言底部 */
-.message-footer {
-  display: none;
-}
-
-/* 滚动条样式 */
-.message-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.message-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.message-list::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-  .message-list {
-    padding: 0 20px;
-  }
-
-  .message-card {
-    padding: 20px;
-  }
-
-  .replies-container {
-    margin-left: 40px;
-    padding-left: 20px;
-  }
-
-  .reply-item {
-    padding: 15px;
-  }
-}
-
 /* 调整回复按钮样式 */
 :deep(.el-button--text) {
   padding: 0;
@@ -384,28 +407,34 @@ onMounted(() => {
   margin-right: 8px;
 }
 
-.loading-container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .message-card {
+    padding: 20px;
+  }
 
-.child-replies {
-  margin-left: 40px;
-  padding-left: 20px;
-  border-left: 2px solid rgba(52, 148, 230, 0.2);
+  .replies-container {
+    margin-left: 40px;
+    padding-left: 20px;
+  }
+
+  .reply-item {
+    padding: 15px;
+  }
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .pagination-container {
   position: relative;
 }
 
-/* 页面切换动画 */
+/* 动画效果 */
 .fade-up-enter-active {
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   transition-delay: calc(var(--el-transition-duration) * 0.2);
@@ -421,6 +450,7 @@ onMounted(() => {
   transform: translateY(0);
 }
 
+/* 分页样式 */
 :deep(.el-pagination) {
   --el-pagination-button-color: #ffffff;
   --el-pagination-hover-color: #3494e6;
@@ -431,7 +461,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
   margin: 0 4px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 :deep(.el-pagination .el-pager li:hover) {
@@ -450,7 +480,7 @@ onMounted(() => {
 :deep(.el-pagination .btn-next) {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 :deep(.el-pagination .btn-prev:hover),
@@ -463,27 +493,6 @@ onMounted(() => {
 :deep(.el-pagination .btn-next:disabled) {
   background: rgba(255, 255, 255, 0.02);
   color: rgba(255, 255, 255, 0.3);
-}
-
-/* 页码切换动画 */
-.page-fade-move,
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.page-fade-enter-from {
-  opacity: 0;
-  transform: translateY(15px);
-}
-
-.page-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-15px);
-}
-
-.page-fade-leave-active {
-  position: absolute;
 }
 
 .message-actions,

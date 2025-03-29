@@ -25,8 +25,8 @@ import FooterComponent from '@/components/home/FooterComponent.vue'
   width: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  /* 防止整体出现滚动条 */
+  overflow-x: hidden;
+  /* 防止水平滚动条 */
   background: linear-gradient(135deg, #1f1f1f 0%, #2d2d2d 100%);
 }
 
@@ -51,12 +51,18 @@ import FooterComponent from '@/components/home/FooterComponent.vue'
   position: relative;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  /* 确保flex子元素可以正确滚动 */
+  box-sizing: border-box;
+  /* 确保padding不会增加元素宽度 */
 }
 
 .layout-main::before {
   content: '';
-  position: absolute;
-  top: 0;
+  position: fixed;
+  /* 改为fixed确保背景覆盖整个视口 */
+  top: 64px;
+  /* 头部高度 */
   left: 0;
   right: 0;
   bottom: 0;
