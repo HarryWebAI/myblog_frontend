@@ -23,13 +23,6 @@
       </div>
     </transition>
 
-    <!-- 分页器 -->
-    <transition name="fade-up" appear>
-      <div class="pagination-wrapper">
-        <PaginationView :total="100" @update:page="handlePageChange" />
-      </div>
-    </transition>
-
     <!-- 创建留言对话框 -->
     <CreateBoard v-model="showCreateDialog" @submit="handleCreateMessage" />
   </div>
@@ -38,7 +31,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import BoardList from '@/components/board/BoardList.vue'
-import PaginationView from '@/components/PaginationView.vue'
 import CommonHeader from '@/components/CommonHeader.vue'
 import CreateBoard from '@/components/board/CreateBoard.vue'
 import { Edit } from '@element-plus/icons-vue'
@@ -62,11 +54,6 @@ const handleCreateMessage = (data: MessageForm) => {
 const handleReply = (message: Message) => {
   console.log('回复消息:', message)
   // TODO: 实现回复功能
-}
-
-const handlePageChange = (page: number) => {
-  console.log('页码改变:', page)
-  // TODO: 在这里处理页码改变的逻辑
 }
 </script>
 

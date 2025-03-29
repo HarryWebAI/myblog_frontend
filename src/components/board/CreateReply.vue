@@ -4,9 +4,9 @@
     <!-- 原留言内容 -->
     <div class="original-message">
       <div class="message-info">
-        <el-avatar :size="32" :src="message.avatar" />
-        <span class="username">{{ message.username }}</span>
-        <span class="time">{{ message.time }}</span>
+        <el-avatar :size="32" :src="message.user.avatar_url" />
+        <span class="username">{{ message.user.name }}</span>
+        <span class="time">{{ formatTime(message.time) }}</span>
       </div>
       <div class="message-content">
         {{ message.content }}
@@ -16,13 +16,13 @@
     <!-- 父回复内容 -->
     <div v-if="parentReply" class="parent-reply">
       <div class="message-info">
-        <el-avatar :size="32" :src="parentReply.avatar" />
-        <span class="username">{{ parentReply.username }}</span>
-        <span class="time">{{ parentReply.time }}</span>
+        <el-avatar :size="32" :src="getAvatar(parentReply.user.avatar_url || '')" />
+        <span class="username">{{ parentReply.user.name }}</span>
+        <span class="time">{{ formatTime(parentReply.time) }}</span>
       </div>
       <div class="message-content">
-        <template v-if="parentReply.replyTo">
-          <span class="reply-to">@{{ getReplyUsername(message.replies || [], parentReply.replyTo) }}</span>
+        <template v-if="parentReply.parent_reply">
+          <span class="reply-to">@{{ getReplyUsername(message.replies || [], parentReply.parent_reply) }}</span>
         </template>
         {{ parentReply.content }}
       </div>
@@ -59,6 +59,8 @@ import type { Message, Reply } from '@/types'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
+import useMsgBoard from '@/hooks/useMsgBoard'
+import { getAvatar } from '@/utils/getAvatar'
 
 interface ReplyForm {
   content: string
@@ -72,11 +74,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'submit', data: ReplyForm): void
 }>()
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { createReply } = useMsgBoard()
 const loading = ref(false)
 const formRef = ref<FormInstance>()
 const dialogVisible = ref(props.modelValue)
@@ -111,13 +113,24 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     loading.value = true
 
-    // 模拟提交
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const success = await createReply(
+      props.message.id,
+      form.content,
+      props.parentReply?.id || null
+    )
 
-    emit('submit', { ...form })
-    handleClose()
+    if (success) {
+      ElMessage.success('回复成功, 页面即将刷新')
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+      handleClose()
+    } else {
+      ElMessage.error('回复失败, 请重试')
+    }
   } catch (error) {
     console.error('表单验证失败:', error)
+    ElMessage.error('请检查输入内容')
   } finally {
     loading.value = false
   }
@@ -143,7 +156,12 @@ watch(() => dialogVisible.value, (newVal) => {
 // 获取被引用回复的用户名
 const getReplyUsername = (replies: Reply[], replyId: number): string => {
   const reply = replies.find(r => r.id === replyId)
-  return reply ? reply.username : ''
+  return reply ? reply.user.name : ''
+}
+
+// 格式化时间
+const formatTime = (time: string) => {
+  return new Date(time).toLocaleString()
 }
 </script>
 

@@ -9,17 +9,18 @@ export interface LoginForm {
   password: string
 }
 
-// 用户信息类型
+// 用户类型
 export interface User {
   uid: string
   email: string
   name: string
-  avatar?: string
-  avatar_url?: string
   telephone: string
-  is_superuser: boolean
-  last_login: string | null
-  is_active?: boolean
+  avatar_url?: string
+  avatar?: string
+  is_active: boolean
+  is_staff: boolean
+  last_login: string
+  is_superuser?: boolean
 }
 
 // 登录响应类型
@@ -170,35 +171,35 @@ export interface Section {
 /**
  * BoardView 页面相关类型定义
  */
-// 子回复类型
-export interface SubReply {
-  id: number
-  username: string
-  avatar: string
-  time: string
-  content: string
-  replyTo?: number // 引用的子回复ID
+// 分页响应类型
+export interface PaginatedResponse<T> {
+  count: number
+  next: string | null
+  previous: string | null
+  results: T[]
 }
 
 // 回复类型
 export interface Reply {
   id: number
-  username: string
-  avatar: string
+  user: User
   time: string
   content: string
-  replies?: SubReply[] // 子回复列表
-  replyTo?: number // 引用的回复ID
+  parent_reply: number | null
+  reply_to: string | null
 }
 
 // 主留言类型
 export interface Message {
   id: number
-  username: string
-  avatar: string
+  user: User
   time: string
   content: string
-  replies?: Reply[]
+  replies: Reply[]
+}
+
+export interface MessageForm {
+  content: string
 }
 
 /**

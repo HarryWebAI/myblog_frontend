@@ -134,7 +134,7 @@ const handleDelete = async () => {
       const success = await deleteUser(props.user?.uid || '')
       if (success) {
         dialogVisible.value = false
-        setInterval(() => {
+        setTimeout(() => {
           window.location.reload()
         }, 1000)
       }

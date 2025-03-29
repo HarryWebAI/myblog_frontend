@@ -39,10 +39,8 @@ import type { FormInstance, FormRules } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-
-interface MessageForm {
-  content: string
-}
+import useMsgBoard from '@/hooks/useMsgBoard'
+import type { MessageForm } from '@/types'
 
 const props = defineProps<{
   modelValue: boolean
@@ -50,11 +48,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'submit', data: MessageForm): void
 }>()
 
 const router = useRouter()
 const authStore = useAuthStore()
+const { createMessage } = useMsgBoard()
 const loading = ref(false)
 const formRef = ref<FormInstance>()
 const dialogVisible = ref(props.modelValue)
@@ -89,13 +87,20 @@ const handleSubmit = async () => {
     await formRef.value.validate()
     loading.value = true
 
-    // 模拟提交
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const success = await createMessage(form.content)
+    if (success) {
+      ElMessage.success('发布成功, 页面即将刷新')
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+      handleClose()
 
-    emit('submit', { ...form })
-    handleClose()
+    } else {
+      ElMessage.error('发布失败, 请重试')
+    }
   } catch (error) {
     console.error('表单验证失败:', error)
+    ElMessage.error('请检查输入内容')
   } finally {
     loading.value = false
   }
