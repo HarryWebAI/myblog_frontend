@@ -67,3 +67,48 @@ import CommonHeader from '@/components/CommonHeader.vue'
   background: rgba(255, 255, 255, 0.3);
 }
 </style>
+
+<!-- 全局样式 -->
+<style>
+/* BlogDetail 弹窗样式覆盖 */
+.blog-detail-dialog .el-dialog {
+  background: rgba(22, 24, 35, 0.95) !important;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(60, 60, 70, 0.3);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  max-width: 1200px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.blog-detail-dialog .el-dialog__body {
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  color: #fff;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(60, 60, 70, 0.5) transparent;
+}
+
+.blog-detail-dialog .el-dialog__header {
+  padding: 0;
+  margin: 0;
+  background: linear-gradient(to right, rgba(22, 24, 30, 1), rgba(30, 32, 45, 0.95));
+  border-bottom: 1px solid rgba(60, 60, 70, 0.5);
+}
+
+.blog-detail-dialog .custom-header {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.blog-detail-dialog .el-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+}
+</style>

@@ -1,4 +1,5 @@
 // GET /blog/blogs?page=? => 获取博客列表api
+// pOST /api/blogs/:blog_id/view/ => 访问量增加接口
 
 import type { Blog, PaginatedResponse } from '@/types'
 import { ref } from 'vue'
@@ -11,7 +12,7 @@ const useBlog = () => {
   const total = ref(0)
   const nextPage = ref<string | null>(null)
   const prevPage = ref<string | null>(null)
-
+  const blog = ref<Blog | null>(null)
   const getBlogs = async (url: string = '/blog/blogs/') => {
     loading.value = true
     try {
@@ -30,6 +31,25 @@ const useBlog = () => {
     }
   }
 
+  const getBlog = async (blogId: number) => {
+    const res = await http.get(`/blog/blogs/${blogId}/`)
+    if (res.status === 200) {
+      blog.value = res.data as Blog
+    }
+  }
+
+  const increaseView = async (blogId: number) => {
+    try {
+      const res = await http.post(`/blog/blogs/${blogId}/view/`)
+      if (res.status === 200) {
+        ElMessage.success('访问量增加成功')
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      ElMessage.error(err.message || '访问量增加失败')
+    }
+  }
+
   return {
     blogs,
     total,
@@ -37,6 +57,9 @@ const useBlog = () => {
     prevPage,
     loading,
     getBlogs,
+    increaseView,
+    blog,
+    getBlog,
   }
 }
 

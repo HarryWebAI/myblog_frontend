@@ -6,96 +6,92 @@
         <el-icon class="loading-icon">
           <Loading />
         </el-icon>
-        <p class="loading-text">加载留言中...</p>
+        <p class="loading-text">正在加载, 请稍后...</p>
       </div>
     </div>
 
-    <transition name="fade-up" appear>
-      <div v-if="!loading" class="message-list">
-        <div v-if="messages.length === 0" class="empty-state">
-          <el-empty description="暂无留言" />
-        </div>
-        <div v-else>
-          <div v-for="message in messages" :key="message.id" class="message-card">
-            <!-- 主留言 -->
-            <div class="message-content">
-              <div class="message-header">
-                <div class="user-info">
-                  <el-avatar :size="40" :src="message.user.avatar_url" />
-                  <div class="user-details">
-                    <div class="user-meta">
-                      <span class="username">{{ message.user.name }}</span>
-                      <el-button v-if="canDeleteMessage(message)" type="danger" text size="small"
-                        @click="handleDelete(message)">
-                        <el-icon>
-                          <Delete />
-                        </el-icon>
-                      </el-button>
-                    </div>
-                    <span class="time">{{ formatTime(message.time) }}</span>
-                  </div>
-                </div>
-                <el-button type="primary" text @click="handleReply(message)">
-                  <el-icon>
-                    <ChatDotRound />
-                  </el-icon>
-                  回复
-                </el-button>
-              </div>
-              <div class="message-body">
-                {{ message.content }}
-              </div>
-            </div>
-
-            <!-- 回复列表 -->
-            <div v-if="message.replies && message.replies.length > 0" class="replies-container">
-              <div v-for="reply in message.replies" :key="reply.id" class="reply-item">
-                <div class="reply-content">
-                  <div class="reply-header">
-                    <div class="user-info">
-                      <el-avatar :size="32" :src="getAvatar(reply.user.avatar_url || '')" />
-                      <div class="user-details">
-                        <div class="user-meta">
-                          <span class="username">{{ reply.user.name }}</span>
-                          <el-button v-if="canDeleteReply(reply)" type="danger" text size="small"
-                            @click="handleDeleteReply(message, reply)">
-                            <el-icon>
-                              <Delete />
-                            </el-icon>
-                          </el-button>
-                        </div>
-                        <span class="time">{{ formatTime(reply.time) }}</span>
-                      </div>
-                    </div>
-                    <el-button type="primary" text size="small" @click="handleReply(message, reply)">
+    <div v-if="!loading" class="message-list">
+      <div v-if="messages.length === 0" class="empty-state">
+        <el-empty description="暂无留言" />
+      </div>
+      <div v-else>
+        <div v-for="message in messages" :key="message.id" class="message-card">
+          <!-- 主留言 -->
+          <div class="message-content">
+            <div class="message-header">
+              <div class="user-info">
+                <el-avatar :size="40" :src="message.user.avatar_url" />
+                <div class="user-details">
+                  <div class="user-meta">
+                    <span class="username">{{ message.user.name }}</span>
+                    <el-button v-if="canDeleteMessage(message)" type="danger" text size="small"
+                      @click="handleDelete(message)">
                       <el-icon>
-                        <ChatDotRound />
+                        <Delete />
                       </el-icon>
-                      回复
                     </el-button>
                   </div>
-                  <div class="reply-body">
-                    <template v-if="reply.reply_to">
-                      <span class="reply-to">@{{ reply.reply_to }}</span>
-                    </template>
-                    {{ reply.content }}
+                  <span class="time">{{ formatTime(message.time) }}</span>
+                </div>
+              </div>
+              <el-button type="primary" text @click="handleReply(message)">
+                <el-icon>
+                  <ChatDotRound />
+                </el-icon>
+                回复
+              </el-button>
+            </div>
+            <div class="message-body">
+              {{ message.content }}
+            </div>
+          </div>
+
+          <!-- 回复列表 -->
+          <div v-if="message.replies && message.replies.length > 0" class="replies-container">
+            <div v-for="reply in message.replies" :key="reply.id" class="reply-item">
+              <div class="reply-content">
+                <div class="reply-header">
+                  <div class="user-info">
+                    <el-avatar :size="32" :src="getAvatar(reply.user.avatar_url || '')" />
+                    <div class="user-details">
+                      <div class="user-meta">
+                        <span class="username">{{ reply.user.name }}</span>
+                        <el-button v-if="canDeleteReply(reply)" type="danger" text size="small"
+                          @click="handleDeleteReply(message, reply)">
+                          <el-icon>
+                            <Delete />
+                          </el-icon>
+                        </el-button>
+                      </div>
+                      <span class="time">{{ formatTime(reply.time) }}</span>
+                    </div>
                   </div>
+                  <el-button type="primary" text size="small" @click="handleReply(message, reply)">
+                    <el-icon>
+                      <ChatDotRound />
+                    </el-icon>
+                    回复
+                  </el-button>
+                </div>
+                <div class="reply-body">
+                  <template v-if="reply.reply_to">
+                    <span class="reply-to">@{{ reply.reply_to }}</span>
+                  </template>
+                  {{ reply.content }}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </transition>
+    </div>
 
-    <transition name="fade-up" appear>
-      <div v-if="!loading && total > 0" class="pagination-wrapper">
-        <div class="pagination-container">
-          <el-pagination key="pagination" v-model:current-page="currentPage" :total="total" :page-size="3"
-            layout="prev, pager, next" @current-change="handleCurrentChange" />
-        </div>
+    <div v-if="!loading && total > 0" class="pagination-wrapper">
+      <div class="pagination-container">
+        <el-pagination key="pagination" v-model:current-page="currentPage" :total="total" :page-size="3"
+          layout="prev, pager, next" @current-change="handleCurrentChange" />
       </div>
-    </transition>
+    </div>
 
     <CreateReply v-if="currentMessage" v-model="showReplyDialog" :message="currentMessage"
       :parent-reply="currentParentReply" @submit="handleReplySubmit" />
@@ -236,22 +232,23 @@ onMounted(() => {
   box-sizing: border-box;
   padding: 0 20px;
   position: relative;
+  overflow: hidden;
+  /* 隐藏所有滚动条 */
 }
 
 /* 加载遮罩层样式 */
 .loading-overlay {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(26, 26, 26, 0.7);
-  backdrop-filter: blur(5px);
-  border-radius: 12px;
-  z-index: 10;
+  z-index: 9999;
 }
 
 .loading-content {
@@ -432,22 +429,6 @@ onMounted(() => {
 
 .pagination-container {
   position: relative;
-}
-
-/* 动画效果 */
-.fade-up-enter-active {
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  transition-delay: calc(var(--el-transition-duration) * 0.2);
-}
-
-.fade-up-enter-from {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.fade-up-enter-to {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* 分页样式 */

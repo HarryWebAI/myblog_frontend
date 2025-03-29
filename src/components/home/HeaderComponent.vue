@@ -13,7 +13,7 @@
           <el-icon class="nav-icon">
             <User />
           </el-icon>
-          关于Harry
+          关于我
         </div>
 
         <div class="nav-link" :class="{ active: isLinkActive('/home/blog') }" @click="navigateTo('/home/blog')"
@@ -21,7 +21,7 @@
           <el-icon class="nav-icon">
             <Document />
           </el-icon>
-          最新博客
+          博&nbsp;&nbsp;&nbsp;&nbsp;客
         </div>
 
         <div class="nav-link" :class="{ active: isLinkActive('/home/board') }" @click="navigateTo('/home/board')"
@@ -42,7 +42,7 @@
 
         <div v-else class="nav-link" :class="{ active: isLinkActive('/home/userinfo') }"
           @click="navigateTo('/home/userinfo')" :style="{ animationDelay: '0.4s' }" :key="5">
-          当前登录: <img :src="getAvatar(user!.avatar || '')" class="avatar">{{ user!.name }}
+          您是: <img :src="getAvatar(user!.avatar || '')" class="avatar">{{ user!.name }}
         </div>
       </transition-group>
     </nav>

@@ -1,8 +1,13 @@
 <template>
   <div class="blog-container">
-    <!-- 加载状态 -->
-    <div v-if="loading" class="blog-loading">
-      <div class="loading-spinner"></div>
+    <!-- 加载遮罩层 -->
+    <div v-if="loading" class="loading-overlay">
+      <div class="loading-content">
+        <el-icon class="loading-icon">
+          <Loading />
+        </el-icon>
+        <p class="loading-text">正在加载, 请稍后...</p>
+      </div>
     </div>
 
     <!-- 博客列表 -->
@@ -14,7 +19,7 @@
 
       <div v-else class="blog-list">
         <!-- 置顶文章 -->
-        <div v-for="blog in topBlogs" :key="'top-' + blog.id" class="blog-item top-blog">
+        <div v-for="blog in topBlogs" :key="'top-' + blog.id" class="blog-item top-blog" @click="openBlogDetail(blog)">
           <div class="top-badge">置顶</div>
           <div class="blog-header">
             <h2 class="blog-title">{{ blog.title }}</h2>
@@ -29,15 +34,21 @@
               <span v-for="tag in blog.tags.slice(0, 4)" :key="tag.id" class="tag">{{ tag.name }}</span>
             </div>
             <div class="blog-stats">
-              <span><i class="far fa-eye"></i> {{ blog.view_count }}</span>
-              <span><i class="far fa-heart"></i> {{ blog.like_count }}</span>
-              <span><i class="far fa-comment"></i> {{ blog.comment_count }}</span>
+              <span><el-icon>
+                  <View />
+                </el-icon> {{ blog.view_count }}</span>
+              <span><el-icon>
+                  <Star />
+                </el-icon> {{ blog.like_count }}</span>
+              <span><el-icon>
+                  <ChatDotRound />
+                </el-icon> {{ blog.comment_count }}</span>
             </div>
           </div>
         </div>
 
         <!-- 普通文章 -->
-        <div v-for="blog in normalBlogs" :key="blog.id" class="blog-item">
+        <div v-for="blog in normalBlogs" :key="blog.id" class="blog-item" @click="openBlogDetail(blog)">
           <div class="blog-header">
             <h2 class="blog-title">{{ blog.title }}</h2>
             <div class="blog-meta">
@@ -51,9 +62,15 @@
               <span v-for="tag in blog.tags.slice(0, 4)" :key="tag.id" class="tag">{{ tag.name }}</span>
             </div>
             <div class="blog-stats">
-              <span><i class="far fa-eye"></i> {{ blog.view_count }}</span>
-              <span><i class="far fa-heart"></i> {{ blog.like_count }}</span>
-              <span><i class="far fa-comment"></i> {{ blog.comment_count }}</span>
+              <span><el-icon>
+                  <View />
+                </el-icon> {{ blog.view_count }}</span>
+              <span><el-icon>
+                  <Star />
+                </el-icon> {{ blog.like_count }}</span>
+              <span><el-icon>
+                  <ChatDotRound />
+                </el-icon> {{ blog.comment_count }}</span>
             </div>
           </div>
         </div>
@@ -64,21 +81,44 @@
         <button class="btn-page" :disabled="!prevPage" @click="loadPrevPage">
           上一页
         </button>
-        <span class="pagination-info">{{ currentPage }} / {{ Math.ceil(total / 10) }}</span>
+        <span class="pagination-info">{{ currentPage }} / {{ Math.ceil(total / 6) }}</span>
         <button class="btn-page" :disabled="!nextPage" @click="loadNextPage">
           下一页
         </button>
       </div>
     </template>
+
+    <!-- 博客详情弹窗 -->
+    <BlogDetail v-if="selectedBlogId" :id="selectedBlogId" v-model:visible="showBlogDetail"
+      @update:visible="closeBlogDetail" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import useBlog from '@/hooks/useBlog'
+import { View, Star, ChatDotRound, Loading } from '@element-plus/icons-vue'
+import BlogDetail from './BlogDetail.vue'
+import type { Blog } from '@/types'
 
 const { blogs, total, loading, getBlogs, nextPage, prevPage } = useBlog()
 const currentPage = ref(1)
+
+// 博客详情相关状态
+const showBlogDetail = ref(false)
+const selectedBlogId = ref<number | null>(null)
+
+// 打开博客详情
+const openBlogDetail = (blog: Blog) => {
+  selectedBlogId.value = blog.id
+  showBlogDetail.value = true
+}
+
+// 关闭博客详情
+const closeBlogDetail = () => {
+  showBlogDetail.value = false
+  selectedBlogId.value = null
+}
 
 // 分离置顶和普通博客
 const topBlogs = computed(() => blogs.value.filter(blog => blog.is_top))
@@ -124,26 +164,49 @@ const loadNextPage = () => {
   box-sizing: border-box;
   width: 100%;
   overflow-x: hidden;
+  position: relative;
 }
 
-/* 加载状态 */
-.blog-loading {
+/* 加载遮罩层样式 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
+  z-index: 9999;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  border-top-color: #3494e6;
-  animation: spin 0.8s linear infinite;
+.loading-content {
+  text-align: center;
+  color: #fff;
 }
 
-@keyframes spin {
+.loading-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: rotate 2s linear infinite;
+}
+
+.loading-text {
+  font-size: 18px;
+  margin: 0;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
   to {
     transform: rotate(360deg);
   }
@@ -238,8 +301,9 @@ const loadNextPage = () => {
   line-height: 1.5;
   margin: 0 0 16px 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
 }
 

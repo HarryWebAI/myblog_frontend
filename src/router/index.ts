@@ -13,6 +13,7 @@ import WelcomeAdminView from '@/views/WelcomeAdmin.vue'
 import AboutmeAdminView from '@/views/AboutmeAdmin.vue'
 import UserAdminView from '@/views/UserAdmin.vue'
 import ActiveView from '@/views/ActiveView.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
