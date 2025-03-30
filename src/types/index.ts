@@ -260,6 +260,24 @@ export interface BlogTag {
   updated_at: string
 }
 
+// 评论用户接口
+export interface CommentUser {
+  id: number
+  username: string
+  first_name: string
+  last_name: string
+}
+
+// 评论接口
+export interface Comment {
+  id: number
+  user: User
+  time: string
+  content: string
+  parent_comment: number | null
+  reply_to: string | null
+}
+
 // 单条博客接口
 export interface Blog {
   id: number
@@ -279,5 +297,13 @@ export interface Blog {
   slug: string
   cover_image: string | null
   is_original: boolean
-  original_url: string
+  original_url: string | null
+  comments?: Comment[]
+}
+
+// 博客评论接口
+export interface BlogComment {
+  blog_id: number
+  content: string
+  parent_comment_id: number | null
 }

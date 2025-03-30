@@ -51,6 +51,8 @@
                 <div class="blog-full-content">
                   {{ blog.content }}
                 </div>
+                <BlogComment :blog="blog" :current-reply-to="currentReplyTo" @submit="handleCommentSubmit"
+                  @reply="handleReply" />
               </div>
             </div>
           </div>
@@ -61,12 +63,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { View, Star, ChatDotRound, Close } from '@element-plus/icons-vue'
 import useBlog from '@/hooks/useBlog'
 import { ElMessage } from 'element-plus'
+import BlogComment from './BlogComment.vue'
+import type { Comment } from '@/types'
 
-const { blog, getBlog, loading } = useBlog()
+const { blog, getBlog, loading, submitComment } = useBlog()
 
 const props = defineProps({
   id: {
@@ -81,9 +85,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible'])
 
+// 当前正在回复的评论
+const currentReplyTo = ref<Comment | null>(null)
+
 // 关闭弹窗
 const handleClose = () => {
   emit('update:visible', false)
+  // 关闭弹窗时清除回复状态
+  currentReplyTo.value = null
 }
 
 // 格式化日期
@@ -95,6 +104,21 @@ const formatDate = (dateString: string) => {
     day: 'numeric'
   }
   return new Intl.DateTimeFormat('zh-CN', options).format(date)
+}
+
+// 处理评论提交
+const handleCommentSubmit = async (content: string, parentId?: number | null) => {
+  try {
+    await submitComment(blog.value?.id || 0, content, parentId)
+    currentReplyTo.value = null
+  } catch (error) {
+    console.error('评论提交失败:', error)
+  }
+}
+
+// 处理回复
+const handleReply = (comment: Comment | null) => {
+  currentReplyTo.value = comment
 }
 
 onMounted(async () => {

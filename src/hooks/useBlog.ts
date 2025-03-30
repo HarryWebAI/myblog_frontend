@@ -1,7 +1,8 @@
 // GET /blog/blogs?page=? => 获取博客列表api
-// pOST /api/blogs/:blog_id/view/ => 访问量增加接口
+// GET /blog/blogs/:blog_id/ => 获取博客详情api
+// POST /api/blog/comments/ => 提交评论api
 
-import type { Blog, PaginatedResponse } from '@/types'
+import type { Blog, PaginatedResponse, BlogComment } from '@/types'
 import { ref } from 'vue'
 import http from '@/utils/http'
 import { ElMessage } from 'element-plus'
@@ -13,6 +14,7 @@ const useBlog = () => {
   const nextPage = ref<string | null>(null)
   const prevPage = ref<string | null>(null)
   const blog = ref<Blog | null>(null)
+
   const getBlogs = async (url: string = '/blog/blogs/') => {
     loading.value = true
     try {
@@ -32,21 +34,38 @@ const useBlog = () => {
   }
 
   const getBlog = async (blogId: number) => {
-    const res = await http.get(`/blog/blogs/${blogId}/`)
-    if (res.status === 200) {
-      blog.value = res.data as Blog
-    }
-  }
-
-  const increaseView = async (blogId: number) => {
     try {
-      const res = await http.post(`/blog/blogs/${blogId}/view/`)
+      const res = await http.get(`/blog/blogs/${blogId}/`)
       if (res.status === 200) {
-        ElMessage.success('访问量增加成功')
+        blog.value = res.data as Blog
       }
     } catch (error: unknown) {
       const err = error as { message?: string }
-      ElMessage.error(err.message || '访问量增加失败')
+      ElMessage.error(err.message || '获取博客详情失败')
+      throw error
+    }
+  }
+
+  // 提交评论
+  const submitComment = async (blogId: number, content: string, parentId?: number | null) => {
+    try {
+      const commentData: BlogComment = {
+        blog_id: blogId,
+        content,
+        parent_comment_id: parentId || null,
+      }
+
+      const res = await http.post('/blog/comments/', commentData)
+      if (res.status === 201) {
+        // 评论成功后重新获取博客详情以更新评论列表
+        await getBlog(blogId)
+        return true
+      }
+      return false
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      ElMessage.error(err.message || '评论提交失败')
+      throw error
     }
   }
 
@@ -57,9 +76,9 @@ const useBlog = () => {
     prevPage,
     loading,
     getBlogs,
-    increaseView,
     blog,
     getBlog,
+    submitComment,
   }
 }
 

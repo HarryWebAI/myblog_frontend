@@ -12,7 +12,7 @@
     </transition-group>
 
     <transition name="fade-up" appear>
-      <button class="explore-btn" @click="handleExplore">
+      <button class="explore-btn" @click="handleExplore" v-if="welcome.buttonText">
         <el-icon class="icon">
           <Compass />
         </el-icon>
