@@ -289,15 +289,10 @@ export interface Blog {
   status: string
   is_top: boolean
   view_count: number
-  like_count: number
   comment_count: number
   created_at: string
   updated_at: string
   published_at: string
-  slug: string
-  cover_image: string | null
-  is_original: boolean
-  original_url: string | null
   comments?: Comment[]
 }
 
@@ -306,4 +301,39 @@ export interface BlogComment {
   blog_id: number
   content: string
   parent_comment_id: number | null
+}
+
+/**
+ * 博客创建相关类型定义
+ */
+export interface CreateBlogForm {
+  title: string
+  content: string
+  summary: string
+  category: number
+  tags: number[]
+  status: 'draft' | 'published'
+  is_top: boolean
+}
+
+// 分类数据
+export interface BlogCategory {
+  id: number
+  name: string
+  description: string
+  slug: string
+  parent: number | null
+  order: number
+  created_at: string
+  updated_at: string
+}
+
+// 标签数据
+export interface BlogTag {
+  id: number
+  name: string
+  slug: string
+  description: string
+  created_at: string
+  updated_at: string
 }

@@ -38,9 +38,6 @@
                   <View />
                 </el-icon> {{ blog.view_count }}</span>
               <span><el-icon>
-                  <Star />
-                </el-icon> {{ blog.like_count }}</span>
-              <span><el-icon>
                   <ChatDotRound />
                 </el-icon> {{ blog.comment_count }}</span>
             </div>
@@ -65,9 +62,6 @@
               <span><el-icon>
                   <View />
                 </el-icon> {{ blog.view_count }}</span>
-              <span><el-icon>
-                  <Star />
-                </el-icon> {{ blog.like_count }}</span>
               <span><el-icon>
                   <ChatDotRound />
                 </el-icon> {{ blog.comment_count }}</span>
@@ -97,7 +91,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import useBlog from '@/hooks/useBlog'
-import { View, Star, ChatDotRound, Loading } from '@element-plus/icons-vue'
+import { View, ChatDotRound, Loading } from '@element-plus/icons-vue'
 import BlogDetail from './BlogDetail.vue'
 import type { Blog } from '@/types'
 

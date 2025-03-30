@@ -99,18 +99,20 @@
                   </el-icon>
                   <h2>{{ sections[activeIndex].title }}</h2>
                 </div>
-                <div class="projects-container">
+                <div class="projects-list">
                   <div v-for="project in sections[activeIndex].content as Project[]" :key="project.id"
                     class="project-item">
-                    <div class="project-header">
-                      <h3>{{ project.name }}</h3>
-                      <div class="tech-stack-badge">{{ project.techStack }}</div>
+                    <div class="project-main">
+                      <div class="project-header">
+                        <h3>{{ project.name }}</h3>
+                        <div class="tech-stack-badge">{{ project.techStack }}</div>
+                      </div>
+                      <ul class="project-details">
+                        <p v-for="(detail, index) in project.details" :key="index">
+                          {{ detail }}
+                        </p>
+                      </ul>
                     </div>
-                    <ul class="project-details">
-                      <p v-for="(detail, index) in project.details" :key="index">
-                        {{ detail }}
-                      </p>
-                    </ul>
                   </div>
                 </div>
               </div>
@@ -306,11 +308,22 @@ onMounted(() => {
 
 .carousel-content::-webkit-scrollbar-track {
   background: transparent;
+  margin: 10px 0;
 }
 
 .carousel-content::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
   border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.carousel-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
+}
+
+/* 禁用滚动条箭头 */
+.carousel-content::-webkit-scrollbar-button {
+  display: none;
 }
 
 /* 区块标题 */
@@ -421,46 +434,109 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 
-/* 项目经验样式 */
-.projects-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.project-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 20px;
-  transition: transform 0.3s, box-shadow 0.3s;
+/* 项目经验部分 */
+.projects-grid {
+  padding: 24px;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 32px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  margin: 0;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.section-icon {
+  font-size: 2rem;
+  color: #ec6ead;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-right: 4px;
+}
+
+.project-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.project-main {
+  padding: 24px;
+}
+
 .project-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateX(10px);
   background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(52, 148, 230, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .project-header {
-  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .project-header h3 {
   color: #3494e6;
-  margin-top: 0;
-  margin-bottom: 10px;
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 500;
 }
 
 .tech-stack-badge {
-  display: inline-block;
   background: linear-gradient(45deg, rgba(52, 148, 230, 0.2), rgba(236, 106, 173, 0.2));
-  padding: 5px 12px;
+  padding: 6px 16px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #ec6ead;
+  white-space: nowrap;
+}
+
+.project-details {
+  margin: 0;
+  padding: 0;
+}
+
+.project-details p {
+  margin-bottom: 12px;
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.project-details p:last-child {
+  margin-bottom: 0;
+}
+
+.project-details p::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #ec6ead;
+  font-size: 1.2rem;
 }
 
 /* 技能树样式 */
@@ -532,9 +608,27 @@ onMounted(() => {
     padding: 8px;
   }
 
-  .projects-container,
-  .skills-grid {
-    grid-template-columns: 1fr;
+  .projects-grid {
+    padding: 16px;
+  }
+
+  .project-main {
+    padding: 20px;
+  }
+
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .project-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .tech-stack-badge {
+    padding: 4px 12px;
+    font-size: 0.85rem;
   }
 
   .section-header h2 {
@@ -543,6 +637,14 @@ onMounted(() => {
 
   .page-title h1 {
     font-size: 2rem;
+  }
+
+  .projects-list {
+    padding-right: 8px;
+  }
+
+  .projects-list::-webkit-scrollbar {
+    width: 4px;
   }
 }
 
@@ -669,5 +771,54 @@ onMounted(() => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 响应式布局 */
+@media (max-width: 1200px) {
+  .projects-container {
+    grid-template-columns: 1fr;
+    padding: 0 16px 32px 16px;
+  }
+
+  .projects-container .project-item {
+    margin-bottom: 32px;
+  }
+
+  .projects-container .project-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .projects-container .project-item:nth-last-child(2) {
+    margin-bottom: 32px;
+  }
+
+  .section-header {
+    padding: 16px 16px 0 16px;
+  }
+}
+
+/* 项目列表滚动条样式 */
+.projects-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.projects-list::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+
+.projects-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.projects-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
+}
+
+/* 禁用项目列表滚动条箭头 */
+.projects-list::-webkit-scrollbar-button {
+  display: none;
 }
 </style>

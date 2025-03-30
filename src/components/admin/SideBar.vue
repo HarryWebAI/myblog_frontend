@@ -29,16 +29,12 @@
         <template #title>注册的粉丝</template>
       </el-menu-item>
 
-      <el-sub-menu index="message">
-        <template #title>
-          <el-icon>
-            <ChatDotRound />
-          </el-icon>
-          <span>留言管理</span>
-        </template>
-        <el-menu-item index="/admin/message/list">留言列表</el-menu-item>
-        <el-menu-item index="/admin/message/settings">留言设置</el-menu-item>
-      </el-sub-menu>
+      <el-menu-item index="/admin/createblog" :route="{ name: 'createblog' }">
+        <el-icon>
+          <Plus />
+        </el-icon>
+        <template #title>新建博客</template>
+      </el-menu-item>
 
       <el-menu-item index="/admin/settings">
         <el-icon>

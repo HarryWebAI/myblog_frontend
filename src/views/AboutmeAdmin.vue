@@ -161,7 +161,7 @@
               <el-input v-model="edu.school" placeholder="学校" />
               <el-input v-model="edu.period" placeholder="学习时间" />
               <el-input v-model="edu.degree" placeholder="学位" />
-              <el-input v-model="edu.description" type="textarea" placeholder="描述" />
+              <el-input v-model="edu.description" type="textarea" placeholder="描述" class="education-description" />
             </div>
           </div>
         </div>
@@ -408,7 +408,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   max-height: calc((100vw - 40px) * 9 / 32);
-  /* 考虑左右padding 40px, 16:9 比例 */
 }
 
 .preview-wrapper {
@@ -420,20 +419,18 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  /* 改为顶部对齐 */
   min-height: 300px;
   box-sizing: border-box;
   overflow: hidden;
 }
 
 .preview-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
   height: 100%;
   padding: 20px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .preview-tabs {
@@ -442,6 +439,7 @@ onMounted(() => {
   margin-bottom: 20px;
   flex-wrap: wrap;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .preview-tab {
@@ -467,30 +465,27 @@ onMounted(() => {
 .preview-content {
   flex: 1;
   width: 100%;
-  overflow-y: auto;
   padding: 0 20px;
   box-sizing: border-box;
-  /* 自定义滚动条样式 */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  overflow-y: auto;
 }
 
 .preview-content::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .preview-content::-webkit-scrollbar-track {
   background: transparent;
-  margin: 4px 0;
 }
 
 .preview-content::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .preview-content::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
 }
 
 /* 工作经历时间线 */
@@ -579,32 +574,38 @@ onMounted(() => {
 
 /* 项目经验样式 */
 .projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-right: 12px;
 }
 
 .project-item {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 20px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
 }
 
 .project-item:hover {
   background: rgba(255, 255, 255, 0.07);
+  transform: translateX(10px);
+  border-color: rgba(52, 148, 230, 0.3);
 }
 
 .project-header {
   margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 .project-header h3 {
   color: #3494e6;
-  margin-top: 0;
-  margin-bottom: 10px;
+  margin: 0;
+  font-size: 1.2rem;
 }
 
 .tech-stack-badge {
@@ -719,12 +720,18 @@ onMounted(() => {
 }
 
 .edit-content::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
   border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .edit-content::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
+}
+
+/* 禁用编辑内容区域的滚动条箭头 */
+.edit-content::-webkit-scrollbar-button {
+  display: none;
 }
 
 .edit-section {
@@ -770,6 +777,31 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
   margin-bottom: 20px;
+}
+
+/* 教育背景表单布局 */
+.education-description {
+  grid-column: 1 / -1;
+  /* 让文本域占满整行 */
+}
+
+/* 教育背景描述文本域样式 */
+:deep(.education-description .el-textarea__inner) {
+  height: 120px !important;
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  resize: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+:deep(.education-description .el-textarea__inner:hover) {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:deep(.education-description .el-textarea__inner:focus) {
+  border-color: #3494e6;
+  box-shadow: 0 0 0 1px #3494e6;
 }
 
 .achievements-section,
@@ -852,12 +884,18 @@ onMounted(() => {
 
   .preview-section {
     max-height: calc((100vw - 20px) * 9 / 16);
-    /* 移动端下使用更合适的比例 */
   }
 
-  .preview-section,
-  .edit-section {
-    width: 100%;
+  .preview-inner {
+    padding: 16px;
+  }
+
+  .preview-content {
+    padding: 0 16px;
+  }
+
+  .preview-content::-webkit-scrollbar {
+    width: 4px;
   }
 }
 

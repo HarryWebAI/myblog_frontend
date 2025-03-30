@@ -31,9 +31,6 @@
                       <View />
                     </el-icon> {{ blog.view_count }}</span>
                   <span><el-icon>
-                      <Star />
-                    </el-icon> {{ blog.like_count }}</span>
-                  <span><el-icon>
                       <ChatDotRound />
                     </el-icon> {{ blog.comment_count }}</span>
                 </div>
@@ -64,7 +61,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { View, Star, ChatDotRound, Close } from '@element-plus/icons-vue'
+import { View, ChatDotRound, Close } from '@element-plus/icons-vue'
 import useBlog from '@/hooks/useBlog'
 import { ElMessage } from 'element-plus'
 import BlogComment from './BlogComment.vue'
@@ -214,8 +211,8 @@ onMounted(async () => {
   flex: 1;
   overflow-y: auto;
   color: #fff;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(60, 60, 70, 0.5) transparent;
+  padding-right: 6px;
+  /* 为滚动条预留空间 */
 }
 
 .modal-body::-webkit-scrollbar {
@@ -224,11 +221,17 @@ onMounted(async () => {
 
 .modal-body::-webkit-scrollbar-track {
   background: transparent;
+  margin: 4px 0;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
-  background-color: rgba(60, 60, 70, 0.5);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
   border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
 }
 
 /* 动画效果 */

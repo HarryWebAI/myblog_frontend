@@ -1,8 +1,10 @@
 // GET /blog/blogs?page=? => 获取博客列表api
 // GET /blog/blogs/:blog_id/ => 获取博客详情api
 // POST /api/blog/comments/ => 提交评论api
+// GET /blog/categories/ => 获取分类列表api
+// GET /blog/tags/ => 获取标签列表api
 
-import type { Blog, PaginatedResponse, BlogComment } from '@/types'
+import type { Blog, PaginatedResponse, BlogComment, BlogCategory, BlogTag } from '@/types'
 import { ref } from 'vue'
 import http from '@/utils/http'
 import { ElMessage } from 'element-plus'
@@ -14,7 +16,10 @@ const useBlog = () => {
   const nextPage = ref<string | null>(null)
   const prevPage = ref<string | null>(null)
   const blog = ref<Blog | null>(null)
+  const categories = ref<BlogCategory[]>([])
+  const tags = ref<BlogTag[]>([])
 
+  // 获取博客列表
   const getBlogs = async (url: string = '/blog/blogs/') => {
     loading.value = true
     try {
@@ -33,6 +38,7 @@ const useBlog = () => {
     }
   }
 
+  // 获取博客
   const getBlog = async (blogId: number) => {
     try {
       const res = await http.get(`/blog/blogs/${blogId}/`)
@@ -69,6 +75,27 @@ const useBlog = () => {
     }
   }
 
+  const getCategoriesAndTags = async () => {
+    try {
+      const [categoriesRes, tagsRes] = await Promise.all([
+        http.get<BlogCategory[]>('/blog/categories/'),
+        http.get<BlogTag[]>('/blog/tags/'),
+      ])
+
+      if (categoriesRes.status === 200) {
+        categories.value = categoriesRes.data
+      }
+
+      if (tagsRes.status === 200) {
+        tags.value = tagsRes.data
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      ElMessage.error(err.message || '获取分类和标签失败')
+      throw error
+    }
+  }
+
   return {
     blogs,
     total,
@@ -79,6 +106,9 @@ const useBlog = () => {
     blog,
     getBlog,
     submitComment,
+    categories,
+    tags,
+    getCategoriesAndTags,
   }
 }
 

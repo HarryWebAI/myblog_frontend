@@ -54,17 +54,17 @@ import CommonHeader from '@/components/CommonHeader.vue'
 }
 
 .blog-view-container::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+  background: transparent;
 }
 
 .blog-view-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
   border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .blog-view-container::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
 }
 </style>
 
@@ -110,5 +110,24 @@ import CommonHeader from '@/components/CommonHeader.vue'
 .blog-detail-dialog .el-overlay {
   background-color: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
+}
+
+/* 博客详情弹窗滚动条样式 */
+.blog-detail-dialog .el-dialog__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.blog-detail-dialog .el-dialog__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.blog-detail-dialog .el-dialog__body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.blog-detail-dialog .el-dialog__body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
 }
 </style>

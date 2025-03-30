@@ -13,6 +13,7 @@ import WelcomeAdminView from '@/views/WelcomeAdmin.vue'
 import AboutmeAdminView from '@/views/AboutmeAdmin.vue'
 import UserAdminView from '@/views/UserAdmin.vue'
 import ActiveView from '@/views/ActiveView.vue'
+import CreateBlogView from '@/views/CreateBlog.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,6 +89,11 @@ const router = createRouter({
           path: 'useradmin',
           name: 'useradmin',
           component: UserAdminView,
+        },
+        {
+          path: 'createblog',
+          name: 'createblog',
+          component: CreateBlogView,
         },
       ],
     },
