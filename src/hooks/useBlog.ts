@@ -1,10 +1,20 @@
 // GET /blog/blogs?page=? => 获取博客列表api
 // GET /blog/blogs/:blog_id/ => 获取博客详情api
 // POST /api/blog/comments/ => 提交评论api
+// DELETE  /api/blog/comments/:comment_id/ => 删除评论api
 // GET /blog/categories/ => 获取分类列表api
 // GET /blog/tags/ => 获取标签列表api
+// POST /blog/blogs/ => 创建博客api
+// POST /blog/blogs/{blog_id}/toggle_top/ => 置顶/取消置顶博客api
 
-import type { Blog, PaginatedResponse, BlogComment, BlogCategory, BlogTag } from '@/types'
+import type {
+  Blog,
+  PaginatedResponse,
+  BlogComment,
+  BlogCategory,
+  BlogTag,
+  CreateBlogForm,
+} from '@/types'
 import { ref } from 'vue'
 import http from '@/utils/http'
 import { ElMessage } from 'element-plus'
@@ -96,6 +106,86 @@ const useBlog = () => {
     }
   }
 
+  const createBlog = async (blogData: CreateBlogForm) => {
+    try {
+      const res = await http.post('/blog/blogs/', blogData)
+      if (res.status === 201) {
+        ElMessage.success('博客创建成功')
+        return true
+      }
+      ElMessage.error('博客创建失败')
+      return false
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      ElMessage.error(err.message || '创建博客失败')
+      throw error
+    }
+  }
+
+  const deleteComment = async (commentId: number) => {
+    try {
+      const res = await http.delete(`/blog/comments/${commentId}/`)
+      if (res.status === 204) {
+        return true
+      }
+      return false
+    } catch (error: unknown) {
+      throw error
+    }
+  }
+
+  // 删除博客
+  const deleteBlog = async (blogId: number) => {
+    try {
+      const response = await http.delete(`/blog/blogs/${blogId}/`)
+      return response.status === 204
+    } catch (error) {
+      console.error('删除博客失败:', error)
+      throw error
+    }
+  }
+
+  // 置顶/取消置顶博客
+  const toggleBlogTop = async (blogId: number) => {
+    try {
+      interface ToggleTopResponse {
+        is_top: boolean
+      }
+
+      const res = await http.post<ToggleTopResponse>(`/blog/blogs/${blogId}/toggle_top/`)
+      if (res.status === 200) {
+        // 更新本地博客列表中的置顶状态
+        blogs.value = blogs.value.map((blog) => {
+          if (blog.id === blogId) {
+            return { ...blog, is_top: !blog.is_top }
+          }
+          return blog
+        })
+        return true
+      }
+      return false
+    } catch (error: unknown) {
+      throw error
+    }
+  }
+
+  // 更新博客
+  const updateBlog = async (blogId: number, blogData: CreateBlogForm) => {
+    try {
+      const res = await http.put(`/blog/blogs/${blogId}/`, blogData)
+      if (res.status === 200) {
+        ElMessage.success('博客更新成功')
+        return true
+      }
+      ElMessage.error('博客更新失败')
+      return false
+    } catch (error: unknown) {
+      const err = error as { message?: string }
+      ElMessage.error(err.message || '更新博客失败')
+      throw error
+    }
+  }
+
   return {
     blogs,
     total,
@@ -109,6 +199,11 @@ const useBlog = () => {
     categories,
     tags,
     getCategoriesAndTags,
+    createBlog,
+    deleteComment,
+    deleteBlog,
+    toggleBlogTop,
+    updateBlog,
   }
 }
 

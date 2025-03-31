@@ -29,18 +29,25 @@
         <template #title>注册的粉丝</template>
       </el-menu-item>
 
-      <el-menu-item index="/admin/createblog" :route="{ name: 'createblog' }">
-        <el-icon>
-          <Plus />
-        </el-icon>
-        <template #title>新建博客</template>
-      </el-menu-item>
-
-      <el-menu-item index="/admin/settings">
+      <el-menu-item index="/admin/systemadmin" :route="{ name: 'systemadmin' }">
         <el-icon>
           <Setting />
         </el-icon>
         <template #title>系统设置</template>
+      </el-menu-item>
+
+      <el-menu-item index="/admin/createblog" :route="{ name: 'createblog' }">
+        <el-icon>
+          <Plus />
+        </el-icon>
+        <template #title>写博客</template>
+      </el-menu-item>
+
+      <el-menu-item index="/admin/editblog" disabled>
+        <el-icon>
+          <Edit />
+        </el-icon>
+        <template #title>改博客</template>
       </el-menu-item>
     </el-menu>
   </div>
@@ -57,6 +64,9 @@ defineProps<{
 const route = useRoute()
 
 const activeMenu = computed(() => {
+  if (route.name === 'editblog') {
+    return '/admin/editblog'
+  }
   return route.path
 })
 </script>

@@ -242,8 +242,6 @@ export interface UserForm {
 export interface BlogCategory {
   id: number
   name: string
-  description: string
-  slug: string
   parent: number | null
   order: number
   created_at: string
@@ -254,8 +252,6 @@ export interface BlogCategory {
 export interface BlogTag {
   id: number
   name: string
-  slug: string
-  description: string
   created_at: string
   updated_at: string
 }
@@ -286,13 +282,11 @@ export interface Blog {
   summary: string
   category: BlogCategory
   tags: BlogTag[]
-  status: string
   is_top: boolean
   view_count: number
   comment_count: number
   created_at: string
   updated_at: string
-  published_at: string
   comments?: Comment[]
 }
 
@@ -310,30 +304,7 @@ export interface CreateBlogForm {
   title: string
   content: string
   summary: string
-  category: number
-  tags: number[]
-  status: 'draft' | 'published'
+  category_id: number
+  tag_ids: number[]
   is_top: boolean
-}
-
-// 分类数据
-export interface BlogCategory {
-  id: number
-  name: string
-  description: string
-  slug: string
-  parent: number | null
-  order: number
-  created_at: string
-  updated_at: string
-}
-
-// 标签数据
-export interface BlogTag {
-  id: number
-  name: string
-  slug: string
-  description: string
-  created_at: string
-  updated_at: string
 }

@@ -385,7 +385,6 @@ const resetAboutme = () => {
 
 onMounted(() => {
   fetchAboutme()
-  console.log(aboutme.value)
 })
 </script>
 
@@ -685,6 +684,8 @@ onMounted(() => {
   background-color: #1e1e1e;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  height: 100%;
+  overflow: hidden;
 }
 
 .edit-header {
@@ -693,6 +694,7 @@ onMounted(() => {
   align-items: center;
   padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -705,9 +707,7 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  /* 自定义滚动条样式 */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  height: 100%;
 }
 
 .edit-content::-webkit-scrollbar {
@@ -716,7 +716,6 @@ onMounted(() => {
 
 .edit-content::-webkit-scrollbar-track {
   background: transparent;
-  margin: 4px 0;
 }
 
 .edit-content::-webkit-scrollbar-thumb {
@@ -729,9 +728,12 @@ onMounted(() => {
   background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
 }
 
-/* 禁用编辑内容区域的滚动条箭头 */
-.edit-content::-webkit-scrollbar-button {
-  display: none;
+.actions {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
 }
 
 .edit-section {
@@ -833,13 +835,6 @@ onMounted(() => {
 
 .delete-btn {
   flex-shrink: 0;
-}
-
-.actions {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .save-btn {

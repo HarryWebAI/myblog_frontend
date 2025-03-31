@@ -69,28 +69,27 @@
   <!-- 操作按钮区域 -->
   <div class="blog-actions">
     <el-button type="default" size="large" @click="handleCancel">取消</el-button>
-    <el-button type="primary" size="large" @click="handleSubmit">发布文章</el-button>
+    <el-button type="primary" size="large" @click="handleSubmit">保存修改</el-button>
   </div>
 </template>
 
 <script setup lang="ts">
 import '@wangeditor/editor/dist/css/style.css'
 import { onBeforeUnmount, ref, shallowRef, computed, onMounted } from 'vue'
-import { onBeforeRouteLeave } from 'vue-router'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import type { IDomEditor } from '@wangeditor/editor'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import type { CreateBlogForm } from '@/types'
 import useBlog from '@/hooks/useBlog'
-import { useRouter } from 'vue-router'
-import type { RouteLocationNormalized, NavigationGuardNext } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 // 编辑器实例, 必须用 shallowRef
 const editorRef = shallowRef()
 const router = useRouter()
+const route = useRoute()
 
 // 分类和标签数据
-const { categories, tags, getCategoriesAndTags, createBlog } = useBlog()
+const { categories, tags, getCategoriesAndTags, getBlog, updateBlog, blog } = useBlog()
 
 // 表单数据
 const blogForm = ref<CreateBlogForm>({
@@ -102,23 +101,11 @@ const blogForm = ref<CreateBlogForm>({
   is_top: false
 })
 
-// 是否已成功发布博客的标志位
-const isPublished = ref(false)
-
 // 已选标签展示
 const getSelectedTags = computed(() => {
   return blogForm.value.tag_ids
     .map(tagId => tags.value.find(t => t.id === tagId))
     .filter((tag): tag is NonNullable<typeof tag> => tag !== undefined)
-})
-
-// 检查是否有未保存的内容
-const hasUnsavedContent = computed(() => {
-  return blogForm.value.title.trim() !== '' ||
-    blogForm.value.content.trim() !== '' ||
-    blogForm.value.summary.trim() !== '' ||
-    blogForm.value.category_id !== ('' as unknown as number) ||
-    blogForm.value.tag_ids.length > 0
 })
 
 // 编辑器配置
@@ -156,85 +143,6 @@ const editorConfig = {
 // 预览内容
 const previewContent = computed(() => {
   return blogForm.value.content
-})
-
-// 保存草稿到 localStorage
-const saveDraftToStorage = () => {
-  try {
-    localStorage.setItem('blog_draft', JSON.stringify(blogForm.value))
-    ElMessage.success('草稿已自动保存')
-  } catch (error) {
-    console.error('保存草稿失败:', error)
-  }
-}
-
-// 从 localStorage 恢复草稿
-const restoreDraft = () => {
-  try {
-    const draft = localStorage.getItem('blog_draft')
-    if (draft) {
-      const parsedDraft = JSON.parse(draft)
-      blogForm.value = {
-        ...blogForm.value,
-        ...parsedDraft
-      }
-      ElMessage.info('已恢复上次的草稿')
-    }
-  } catch (error) {
-    console.error('恢复草稿失败:', error)
-  }
-}
-
-// 清除草稿
-const clearDraft = () => {
-  try {
-    localStorage.removeItem('blog_draft')
-  } catch (error) {
-    console.error('清除草稿失败:', error)
-  }
-}
-
-// 路由离开前的处理
-onBeforeRouteLeave(async (
-  to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
-  next: NavigationGuardNext
-) => {
-  const editor = editorRef.value
-  if (editor) {
-    editor.destroy()
-  }
-
-  // 如果已经成功发布，直接离开
-  if (isPublished.value) {
-    next()
-    return
-  }
-
-  // 如果有未保存的内容，询问是否保存草稿
-  if (hasUnsavedContent.value) {
-    try {
-      await ElMessageBox.confirm(
-        '您有未保存的内容，是否保存为草稿？',
-        '提示',
-        {
-          confirmButtonText: '保存草稿',
-          cancelButtonText: '不保存',
-          type: 'warning',
-          customClass: 'dark-message-box'
-        }
-      )
-      // 用户点击保存草稿
-      saveDraftToStorage()
-      next()
-    } catch {
-      // 用户点击不保存，清除草稿
-      clearDraft()
-      next()
-    }
-  } else {
-    next()
-  }
 })
 
 // 组件销毁前检查
@@ -291,24 +199,19 @@ const handleSubmit = async () => {
       return
     }
 
-    const success = await createBlog(blogForm.value)
+    const blogId = Number(route.params.id)
+    const success = await updateBlog(blogId, blogForm.value)
     if (success) {
-      // 设置发布成功标志
-      isPublished.value = true
-      // 发布成功后清除草稿
-      clearDraft()
-      // 创建成功后可以跳转到博客列表页面
+      ElMessage.success('博客更新成功')
       router.push({ name: 'blog' })
     }
   } catch (error) {
-    console.error('创建博客失败:', error)
+    console.error('更新博客失败:', error)
   }
 }
 
 const handleCancel = () => {
-  // 取消时清除草稿
-  clearDraft()
-  console.log('取消编辑')
+  router.push({ name: 'blog' })
 }
 
 // 处理标签选择变化
@@ -322,15 +225,34 @@ const handleTagsChange = (value: number[]) => {
 onMounted(async () => {
   try {
     await getCategoriesAndTags()
-    // 恢复草稿
-    restoreDraft()
+    // 获取博客数据
+    const blogId = Number(route.params.id)
+    if (isNaN(blogId)) {
+      ElMessage.error('无效的博客 ID')
+      router.push({ name: 'blog' })
+      return
+    }
+    await getBlog(blogId)
+    if (blog.value) {
+      blogForm.value = {
+        title: blog.value.title,
+        content: blog.value.content,
+        summary: blog.value.summary,
+        category_id: blog.value.category.id,
+        tag_ids: blog.value.tags.map(tag => tag.id),
+        is_top: blog.value.is_top
+      }
+    }
   } catch (error) {
-    console.error('Failed to fetch categories and tags:', error)
+    console.error('Failed to fetch blog data:', error)
+    ElMessage.error('获取博客数据失败')
+    router.push({ name: 'blog' })
   }
 })
 </script>
 
 <style scoped>
+/* 复用 CreateBlog.vue 的样式 */
 /* 标题区域 */
 .blog-header {
   background: rgba(255, 255, 255, 0.03);
@@ -798,123 +720,5 @@ onMounted(async () => {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
-}
-
-/* 项目经验样式 */
-.projects-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  max-width: 100%;
-}
-
-.project-item {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 24px;
-  transition: all 0.3s ease;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.project-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(52, 148, 230, 0.3);
-}
-
-.project-header {
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.project-header h3 {
-  color: #3494e6;
-  margin: 0;
-  font-size: 1.2rem;
-  flex: 1;
-}
-
-.tech-stack-badge {
-  display: inline-block;
-  background: linear-gradient(45deg, rgba(52, 148, 230, 0.2), rgba(236, 106, 173, 0.2));
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  color: #ec6ead;
-  white-space: nowrap;
-}
-
-.project-details {
-  margin: 0;
-  padding: 0;
-}
-
-.project-details p {
-  margin-bottom: 8px;
-  padding-left: 20px;
-  position: relative;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.project-details p::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: #ec6ead;
-  font-size: 1.2rem;
-}
-
-/* 响应式布局 */
-@media (max-width: 1200px) {
-  .projects-container {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 暗色消息框样式 */
-:deep(.dark-message-box) {
-  background: rgb(30, 32, 45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-:deep(.dark-message-box .el-message-box__title) {
-  color: #fff;
-}
-
-:deep(.dark-message-box .el-message-box__content) {
-  color: #e1e1e1;
-}
-
-:deep(.dark-message-box .el-message-box__btns) {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-:deep(.dark-message-box .el-button) {
-  background: transparent;
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #e1e1e1;
-}
-
-:deep(.dark-message-box .el-button:hover) {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-:deep(.dark-message-box .el-button--primary) {
-  background: #3494e6;
-  border-color: #3494e6;
-  color: #fff;
-}
-
-:deep(.dark-message-box .el-button--primary:hover) {
-  background: #2980b9;
-  border-color: #2980b9;
 }
 </style>

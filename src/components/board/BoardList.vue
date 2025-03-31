@@ -11,8 +11,9 @@
     </div>
 
     <div v-if="!loading" class="message-list">
-      <div v-if="messages.length === 0" class="empty-state">
-        <el-empty description="暂无留言" />
+      <div v-if="messages.length === 0" class="board-empty">
+        <div class="empty-text">暂无留言</div>
+        <div class="subtitle">快来发表第一条留言吧!</div>
       </div>
       <div v-else>
         <div v-for="message in messages" :key="message.id" class="message-card">
@@ -481,5 +482,29 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.board-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #888;
 }
 </style>

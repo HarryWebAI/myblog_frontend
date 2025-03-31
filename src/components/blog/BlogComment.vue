@@ -20,7 +20,13 @@
         </el-button>
       </div>
       <el-input v-model="commentContent" type="textarea" :rows="3" placeholder="写下你的评论..." :maxlength="500"
-        show-word-limit resize="none" ref="commentInput" />
+        show-word-limit resize="none" ref="commentInput" style="
+          --el-input-bg-color: rgba(35, 37, 50, 0.8);
+          --el-input-border-color: rgba(60, 60, 70, 0.5);
+          --el-input-text-color: #e1e1e1;
+          --el-input-hover-border-color: #3494e6;
+          --el-input-focus-border-color: #3494e6;
+        " />
       <div class="form-actions">
         <el-button type="primary" @click="handleSubmit" :loading="submitting" :disabled="!commentContent.trim()">
           发表评论
@@ -70,7 +76,33 @@
             <el-button type="primary" link @click="handleReply(comment)" :disabled="!isLoggedIn">
               回复
             </el-button>
+            <el-button v-if="canDeleteComment(comment)" type="danger" link @click="showDeleteConfirm(comment)">
+              删除
+            </el-button>
           </div>
+
+          <!-- 删除确认层 -->
+          <transition name="slide-fade">
+            <div v-if="deleteConfirmComment?.id === comment.id" class="delete-confirm">
+              <div class="delete-content">
+                <el-icon class="warning-icon">
+                  <Warning />
+                </el-icon>
+                <div class="delete-text">
+                  <p>确定要删除这条评论吗?</p>
+                  <p class="sub-text">此操作不可恢复</p>
+                </div>
+                <div class="delete-actions">
+                  <el-button type="default" link @click="cancelDelete">
+                    取消
+                  </el-button>
+                  <el-button type="danger" @click="confirmDelete">
+                    删除
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </transition>
         </div>
       </div>
       <div v-else class="no-comments">
@@ -83,7 +115,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
-import { CircleCheckFilled } from '@element-plus/icons-vue'
+import { CircleCheckFilled, Warning } from '@element-plus/icons-vue'
 import type { Blog, Comment, User } from '@/types'
 import { useAuthStore } from '@/stores/auth'
 import { getAvatar } from '@/utils/getAvatar'
@@ -96,6 +128,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'submit', content: string, parentId?: number | null): void
   (e: 'reply', comment: Comment | null): void
+  (e: 'delete', commentId: number): void
 }>()
 
 const authStore = useAuthStore()
@@ -187,6 +220,44 @@ const handleLogin = () => {
 const handleCancelReply = () => {
   emit('reply', null)
 }
+
+// 判断是否可以删除评论
+const canDeleteComment = (comment: Comment) => {
+  const currentUser = authStore.user
+  if (!currentUser) return false
+
+  // 超级管理员可以删除任何评论
+  if (currentUser.is_superuser) return true
+
+  // 评论作者可以删除自己的评论
+  return currentUser.uid === comment.user.uid
+}
+
+// 删除确认相关
+const deleteConfirmComment = ref<Comment | null>(null)
+
+// 显示删除确认
+const showDeleteConfirm = (comment: Comment) => {
+  deleteConfirmComment.value = comment
+}
+
+// 取消删除
+const cancelDelete = () => {
+  deleteConfirmComment.value = null
+}
+
+// 确认删除
+const confirmDelete = async () => {
+  if (!deleteConfirmComment.value) return
+
+  try {
+    await emit('delete', deleteConfirmComment.value.id)
+    showTipMessage('评论删除成功', 'success')
+    deleteConfirmComment.value = null
+  } catch {
+    showTipMessage('评论删除失败', 'error')
+  }
+}
 </script>
 
 <style scoped>
@@ -201,6 +272,7 @@ const handleCancelReply = () => {
 }
 
 .comment-item {
+  position: relative;
   margin-bottom: 24px;
   padding: 16px;
   background: rgba(40, 40, 50, 0.3);
@@ -257,7 +329,23 @@ const handleCancelReply = () => {
 }
 
 .comment-form {
-  margin-top: 20px;
+  margin-top: 24px;
+}
+
+.comment-form :deep(.el-textarea__inner) {
+  background-color: rgba(35, 37, 50, 0.8);
+  border: 1px solid rgba(60, 60, 70, 0.5);
+  color: #e1e1e1;
+}
+
+.comment-form :deep(.el-textarea__inner:focus) {
+  background-color: rgba(40, 42, 55, 0.9);
+  border-color: #3494e6;
+}
+
+.comment-form :deep(.el-input__count) {
+  background-color: transparent;
+  color: #888;
 }
 
 .form-actions {
@@ -353,5 +441,68 @@ const handleCancelReply = () => {
 
 .tip-message .el-icon {
   font-size: 18px;
+}
+
+.delete-confirm {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(22, 24, 35, 0.95);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+.delete-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.warning-icon {
+  font-size: 48px;
+  color: #f56c6c;
+}
+
+.delete-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.delete-text p {
+  margin: 0;
+  color: #fff;
+  font-size: 16px;
+}
+
+.delete-text .sub-text {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.delete-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
 }
 </style>

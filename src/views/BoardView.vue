@@ -82,6 +82,26 @@ const handleReply = (message: Message) => {
   box-sizing: border-box;
 }
 
+.board-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: transparent;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  opacity: 0.9;
+}
+
 .create-button {
   padding: 8px 25px;
   font-size: 1.1rem;

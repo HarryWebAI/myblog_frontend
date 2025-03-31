@@ -31,8 +31,10 @@ import CommonHeader from '@/components/CommonHeader.vue'
 
 .subtitle {
   font-size: 1.2rem;
-  color: #e0e0e0;
-  opacity: 0.9;
+  color: transparent;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
   text-align: center;
   margin: 2rem 0;
   flex-shrink: 0;
@@ -65,6 +67,26 @@ import CommonHeader from '@/components/CommonHeader.vue'
 
 .blog-view-container::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
+}
+
+.blog-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: transparent;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-align: center;
+}
+
+.empty-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  opacity: 0.9;
 }
 </style>
 

@@ -9,7 +9,19 @@
         <div class="modal-container">
           <!-- 弹窗头部 -->
           <div class="modal-header">
-            <h3 class="modal-title">{{ blog?.title }}</h3>
+            <div class="header-left">
+              <h3 class="modal-title">{{ blog?.title }}</h3>
+              <el-switch v-if="authStore.isSuperuser() && blog" v-model="blog.is_top"
+                :active-text="blog.is_top ? '已置顶' : '置顶'" :class="{ 'is-top': blog.is_top }" @change="handleToggleTop"
+                class="top-switch" />
+              <el-button v-if="authStore.isSuperuser() && blog" type="primary" size="small" @click="handleEdit"
+                class="edit-btn">
+                <el-icon>
+                  <Edit />
+                </el-icon>
+                编辑
+              </el-button>
+            </div>
             <button @click="handleClose" class="close-btn">
               <el-icon>
                 <Close />
@@ -25,7 +37,7 @@
             <div v-else-if="blog" class="blog-detail-content">
               <div class="blog-meta">
                 <span class="blog-category">{{ blog.category.name }}</span>
-                <span class="blog-date">{{ formatDate(blog.published_at) }}</span>
+                <span class="blog-date">{{ formatDate(blog.created_at) }}</span>
                 <div class="blog-stats">
                   <span><el-icon>
                       <View />
@@ -43,13 +55,10 @@
               </div>
 
               <div class="blog-content">
-                <p class="blog-summary">{{ blog.summary }}</p>
                 <div class="content-divider"></div>
-                <div class="blog-full-content">
-                  {{ blog.content }}
-                </div>
+                <div class="blog-full-content" v-html="blog.content"></div>
                 <BlogComment :blog="blog" :current-reply-to="currentReplyTo" @submit="handleCommentSubmit"
-                  @reply="handleReply" />
+                  @reply="handleReply" @delete="handleCommentDelete" />
               </div>
             </div>
           </div>
@@ -60,14 +69,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { View, ChatDotRound, Close } from '@element-plus/icons-vue'
+import { onMounted, ref, nextTick } from 'vue'
+import { View, ChatDotRound, Close, Edit } from '@element-plus/icons-vue'
 import useBlog from '@/hooks/useBlog'
 import { ElMessage } from 'element-plus'
 import BlogComment from './BlogComment.vue'
 import type { Comment } from '@/types'
+import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 
-const { blog, getBlog, loading, submitComment } = useBlog()
+const { blog, getBlog, loading, submitComment, deleteComment, toggleBlogTop } = useBlog()
+const authStore = useAuthStore()
+const router = useRouter()
 
 const props = defineProps({
   id: {
@@ -116,6 +129,59 @@ const handleCommentSubmit = async (content: string, parentId?: number | null) =>
 // 处理回复
 const handleReply = (comment: Comment | null) => {
   currentReplyTo.value = comment
+  if (comment) {
+    nextTick(() => {
+      const commentForm = document.querySelector('.comment-form')
+      if (commentForm) {
+        commentForm.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        // 自动聚焦到文本域
+        const textarea = document.querySelector('.comment-form textarea') as HTMLTextAreaElement
+        if (textarea) {
+          textarea.focus()
+        }
+      }
+    })
+  }
+}
+
+// 处理评论删除
+const handleCommentDelete = async (commentId: number) => {
+  try {
+    const success = await deleteComment(commentId)
+    if (success && blog.value) {
+      // 删除成功后重新获取博客详情以更新评论列表
+      await getBlog(blog.value.id)
+      // 滚动到评论输入框
+      nextTick(() => {
+        const commentForm = document.querySelector('.comment-form')
+        if (commentForm) {
+          commentForm.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      })
+    }
+  } catch (error) {
+    console.error('删除评论失败:', error)
+  }
+}
+
+// 处理博客置顶
+const handleToggleTop = async () => {
+  if (!blog.value) return
+  try {
+    await toggleBlogTop(blog.value.id)
+  } catch (error: unknown) {
+    const err = error as { message?: string }
+    ElMessage.error(err.message || '操作失败')
+    // 如果操作失败，恢复开关状态
+    blog.value.is_top = !blog.value.is_top
+  }
+}
+
+// 处理编辑按钮点击
+const handleEdit = () => {
+  if (blog.value) {
+    router.push({ name: 'editblog', params: { id: blog.value.id } })
+  }
 }
 
 onMounted(async () => {
@@ -181,6 +247,12 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .modal-title {
   margin: 0;
   color: #fff;
@@ -204,6 +276,54 @@ onMounted(async () => {
 
 .close-btn:hover {
   background: #ec6ead;
+}
+
+.top-switch {
+  margin-left: 8px;
+}
+
+.top-switch :deep(.el-switch__label) {
+  color: #888;
+  font-weight: 300;
+  transition: all 0.3s ease;
+}
+
+.top-switch.is-top :deep(.el-switch__label) {
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+
+.top-switch :deep(.el-switch__core) {
+  border-color: rgba(52, 148, 230, 0.3);
+  background: rgba(52, 148, 230, 0.1);
+}
+
+.top-switch :deep(.el-switch.is-checked .el-switch__core) {
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  border-color: transparent;
+}
+
+.edit-btn {
+  margin-left: 8px;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  border: none;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 148, 230, 0.3);
+}
+
+.edit-btn .el-icon {
+  margin-right: 4px;
 }
 
 /* 弹窗内容区域 */
@@ -298,18 +418,6 @@ onMounted(async () => {
   background: rgba(52, 148, 230, 0.3);
 }
 
-.blog-summary {
-  font-size: 18px;
-  line-height: 1.6;
-  color: #ddd;
-  margin-bottom: 24px;
-  font-weight: 500;
-  padding: 16px;
-  background: rgba(40, 40, 50, 0.3);
-  border-radius: 8px;
-  border-left: 3px solid #3494e6;
-}
-
 .content-divider {
   height: 1px;
   background: linear-gradient(to right, transparent, rgba(60, 60, 70, 0.5), transparent);
@@ -320,7 +428,124 @@ onMounted(async () => {
   font-size: 16px;
   line-height: 1.8;
   color: #ccc;
-  white-space: pre-wrap;
+}
+
+/* 富文本内容样式 */
+.blog-full-content :deep(p) {
+  margin-bottom: 1em;
+}
+
+.blog-full-content :deep(h1),
+.blog-full-content :deep(h2),
+.blog-full-content :deep(h3),
+.blog-full-content :deep(h4),
+.blog-full-content :deep(h5),
+.blog-full-content :deep(h6) {
+  color: #fff;
+  margin: 1.5em 0 0.8em;
+  font-weight: 600;
+}
+
+.blog-full-content :deep(h1) {
+  font-size: 2em;
+}
+
+.blog-full-content :deep(h2) {
+  font-size: 1.75em;
+}
+
+.blog-full-content :deep(h3) {
+  font-size: 1.5em;
+}
+
+.blog-full-content :deep(h4) {
+  font-size: 1.25em;
+}
+
+.blog-full-content :deep(h5) {
+  font-size: 1.1em;
+}
+
+.blog-full-content :deep(h6) {
+  font-size: 1em;
+}
+
+.blog-full-content :deep(ul),
+.blog-full-content :deep(ol) {
+  padding-left: 2em;
+  margin-bottom: 1em;
+}
+
+.blog-full-content :deep(li) {
+  margin-bottom: 0.5em;
+}
+
+.blog-full-content :deep(blockquote) {
+  border-left: 4px solid #3494e6;
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  background: rgba(52, 148, 230, 0.1);
+  color: #ddd;
+}
+
+.blog-full-content :deep(code) {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.blog-full-content :deep(pre) {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.blog-full-content :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+
+.blog-full-content :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 1em 0;
+}
+
+.blog-full-content :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.blog-full-content :deep(th),
+.blog-full-content :deep(td) {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5em;
+  text-align: left;
+}
+
+.blog-full-content :deep(th) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.blog-full-content :deep(a) {
+  color: #3494e6;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.blog-full-content :deep(a:hover) {
+  color: #ec6ead;
+}
+
+.blog-full-content :deep(hr) {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 2em 0;
 }
 
 .loading-container {

@@ -14,6 +14,8 @@ import AboutmeAdminView from '@/views/AboutmeAdmin.vue'
 import UserAdminView from '@/views/UserAdmin.vue'
 import ActiveView from '@/views/ActiveView.vue'
 import CreateBlogView from '@/views/CreateBlog.vue'
+import SystemAdminView from '@/views/SystemAdmin.vue'
+import EditBlogView from '@/views/EditBlog.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -91,9 +93,19 @@ const router = createRouter({
           component: UserAdminView,
         },
         {
+          path: 'systemadmin',
+          name: 'systemadmin',
+          component: SystemAdminView,
+        },
+        {
           path: 'createblog',
           name: 'createblog',
           component: CreateBlogView,
+        },
+        {
+          path: 'editblog/:id',
+          name: 'editblog',
+          component: EditBlogView,
         },
       ],
     },

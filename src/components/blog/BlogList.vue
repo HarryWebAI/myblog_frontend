@@ -13,8 +13,8 @@
     <!-- 博客列表 -->
     <template v-else>
       <div v-if="blogs.length === 0" class="blog-empty">
-        <div class="empty-icon">📄</div>
         <div class="empty-text">暂无博客内容</div>
+        <div class="subtitle">待博主发布第一篇博客...</div>
       </div>
 
       <div v-else class="blog-list">
@@ -25,7 +25,7 @@
             <h2 class="blog-title">{{ blog.title }}</h2>
             <div class="blog-meta">
               <span class="blog-category">{{ blog.category.name }}</span>
-              <span class="blog-date">{{ formatDate(blog.published_at) }}</span>
+              <span class="blog-date">{{ formatDate(blog.created_at) }}</span>
             </div>
           </div>
           <p class="blog-summary">{{ blog.summary }}</p>
@@ -40,6 +40,8 @@
               <span><el-icon>
                   <ChatDotRound />
                 </el-icon> {{ blog.comment_count }}</span>
+              <el-button v-if="authStore.isSuperuser()" type="danger" :icon="Delete" circle size="small"
+                @click="handleDeleteBlog(blog, $event)" class="delete-btn" />
             </div>
           </div>
         </div>
@@ -50,7 +52,7 @@
             <h2 class="blog-title">{{ blog.title }}</h2>
             <div class="blog-meta">
               <span class="blog-category">{{ blog.category.name }}</span>
-              <span class="blog-date">{{ formatDate(blog.published_at) }}</span>
+              <span class="blog-date">{{ formatDate(blog.created_at) }}</span>
             </div>
           </div>
           <p class="blog-summary">{{ blog.summary }}</p>
@@ -65,13 +67,15 @@
               <span><el-icon>
                   <ChatDotRound />
                 </el-icon> {{ blog.comment_count }}</span>
+              <el-button v-if="authStore.isSuperuser()" type="danger" :icon="Delete" circle size="small"
+                @click="handleDeleteBlog(blog, $event)" class="delete-btn" />
             </div>
           </div>
         </div>
       </div>
 
       <!-- 分页 -->
-      <div class="blog-pagination">
+      <div class="blog-pagination" v-if="total > 6">
         <button class="btn-page" :disabled="!prevPage" @click="loadPrevPage">
           上一页
         </button>
@@ -91,12 +95,15 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import useBlog from '@/hooks/useBlog'
-import { View, ChatDotRound, Loading } from '@element-plus/icons-vue'
+import { View, ChatDotRound, Loading, Delete } from '@element-plus/icons-vue'
 import BlogDetail from './BlogDetail.vue'
 import type { Blog } from '@/types'
+import { useAuthStore } from '@/stores/auth'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-const { blogs, total, loading, getBlogs, nextPage, prevPage } = useBlog()
+const { blogs, total, loading, getBlogs, nextPage, prevPage, deleteBlog } = useBlog()
 const currentPage = ref(1)
+const authStore = useAuthStore()
 
 // 博客详情相关状态
 const showBlogDetail = ref(false)
@@ -112,6 +119,33 @@ const openBlogDetail = (blog: Blog) => {
 const closeBlogDetail = () => {
   showBlogDetail.value = false
   selectedBlogId.value = null
+}
+
+// 处理博客删除
+const handleDeleteBlog = async (blog: Blog, event: Event) => {
+  event.stopPropagation() // 阻止事件冒泡,避免触发博客详情
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除博客 "${blog.title}" 吗?`,
+      '删除确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+        confirmButtonClass: 'el-button--danger',
+      }
+    )
+
+    await deleteBlog(blog.id)
+    ElMessage.success('博客删除成功')
+    // 重新加载博客列表
+    getBlogs()
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除博客失败:', error)
+      ElMessage.error('删除博客失败')
+    }
+  }
 }
 
 // 分离置顶和普通博客
@@ -213,12 +247,22 @@ const loadNextPage = () => {
   align-items: center;
   justify-content: center;
   height: 200px;
-  color: #888;
+  text-align: center;
 }
 
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+.empty-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #3494e6, #ec6ead);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #888;
 }
 
 /* 博客列表 */
@@ -333,6 +377,7 @@ const loadNextPage = () => {
   gap: 16px;
   color: #888;
   font-size: 14px;
+  align-items: center;
 }
 
 /* 分页 */
@@ -388,5 +433,19 @@ const loadNextPage = () => {
   .blog-title {
     font-size: 18px;
   }
+}
+
+.delete-btn {
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.blog-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover {
+  transform: scale(1.1);
 }
 </style>

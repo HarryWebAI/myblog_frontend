@@ -130,8 +130,13 @@ const handleUserInfo = () => {
 }
 
 .content::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.3), rgba(236, 106, 173, 0.3));
   border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(52, 148, 230, 0.5), rgba(236, 106, 173, 0.5));
 }
 
 /* 路由过渡动画 */
