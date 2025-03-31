@@ -33,8 +33,8 @@
         </el-button>
       </div>
     </div>
-    <div v-else class="login-tip">
-      请 <el-button type="primary" link @click="handleLogin">登录</el-button> 后发表评论
+    <div v-else class="login-tip" style="height: 60px;">
+      请 <el-button type="primary" link @click="router.push({ name: 'login' })">登录</el-button> 后发表评论
     </div>
 
     <!-- 提示组件 -->
@@ -114,11 +114,11 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
-import { ElMessage } from 'element-plus'
 import { CircleCheckFilled, Warning } from '@element-plus/icons-vue'
 import type { Blog, Comment, User } from '@/types'
 import { useAuthStore } from '@/stores/auth'
 import { getAvatar } from '@/utils/getAvatar'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   blog: Blog
@@ -140,6 +140,7 @@ const showTip = ref(false)
 const tipMessage = ref('')
 const tipType = ref<'success' | 'error'>('success')
 const tipIcon = ref('CircleCheckFilled')
+const router = useRouter()
 
 // 计算属性
 const isLoggedIn = computed(() => authStore.isLoggedIn())
@@ -208,12 +209,6 @@ const handleSubmit = async () => {
   } finally {
     submitting.value = false
   }
-}
-
-// 处理登录
-const handleLogin = () => {
-  // 这里可以触发登录流程
-  ElMessage.info('请先登录')
 }
 
 // 处理取消回复
